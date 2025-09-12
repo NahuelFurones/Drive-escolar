@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ingreso de Datos</title>
+  <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body class="bg-cover bg-center min-h-screen" style="background-image: url('/src/fondo_chaca.jpg')">
+  <div class="flex items-center justify-center min-h-screen bg-black bg-opacity-50">
+    <div class="bg-white bg-opacity-10 rounded-lg p-8 w-full max-w-md text-white">
+      <img src="/src/chacabuco_logo.png" alt="Logo" class="mx-auto mb-4 w-40 h-24"/>
+      <h2 class="text-2xl font-bold mb-4">Ingrese sus datos</h2>
+      <% if (error) { %>
+        <div class="bg-red-500 text-white rounded p-2 mb-2 text-center"><%= error %></div>
+      <% } %>
+      <form method="POST">
+        <div class="mb-4 text-left">
+          <label class="block mb-1">¿ERES PROFESOR, PRECEPTOR O DEPARTAMENTO?</label>
+          <select name="tipo" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white" required>
+            <option>Seleccionar</option>
+            <option>Profesor</option>
+            <option>Preceptor</option>
+            <option>Departamento</option>
+          </select>
+        </div>
+        <div class="mb-4 text-left">
+          <label class="block mb-1">NOMBRE Y APELLIDO</label>
+          <input type="text" name="nombre" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white" required>
+        </div>
+        <div class="mb-4 text-left">
+          <label class="block mb-1">NÚMERO DE DOCUMENTO</label>
+          <input type="text" name="dni" maxlength="8" pattern="\d{8}" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white" required>
+        </div>
+        <div class="mb-4 text-left">
+          <label class="block mb-1">FECHA DE NACIMIENTO</label>
+          <input type="date" name="fecha" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white" required>
+        </div>
+        <button type="submit" class="w-full py-2 bg-white text-black font-bold rounded hover:bg-gray-200">Siguiente</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inicio de Sesión</title>
+  <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body class="bg-cover bg-center min-h-screen" style="background-image: url('/src/fondo_chaca.jpg')">
+  <div class="flex items-center justify-center min-h-screen bg-black bg-opacity-50">
+    <div class="bg-white bg-opacity-10 rounded-lg p-8 w-full max-w-md text-white">
+      <img src="/src/chacabuco_logo.png" alt="Logo" class="mx-auto mb-4 w-40 h-32"/>
+      <h2 class="text-2xl font-bold mb-4">Sistema de comunicación escolar</h2>
+      <% if (error) { %>
+        <div class="bg-red-500 text-white rounded p-2 mb-2 text-center"><%= error %></div>
+      <% } %>
+      <form method="POST">
+        <div class="mb-4 text-left">
+          <label class="block mb-1">CORREO ELECTRONICO</label>
+          <input type="email" name="email" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white" required>
+        </div>
+        <div class="mb-4 text-left">
+          <label class="block mb-1">CONTRASEÑA</label>
+          <input type="password" name="password" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white" maxlength="64" required>
+        </div>
+        <p class="mb-4">¿No estás registrado? Regístrate <a href="/ingreDatos" class="underline">aquí</a></p>
+        <button type="submit" class="w-full py-2 bg-white text-black font-bold rounded hover:bg-gray-200">INICIAR SESIÓN</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

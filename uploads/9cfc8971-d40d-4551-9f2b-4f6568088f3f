@@ -1,0 +1,73 @@
+<?php
+
+	$variable=5;
+	echo "El valor de la variable es: {$variable} <br>"; //echo=> escribir texto en la pagina web
+
+	$variable="Nombre";
+	echo "El valor de la variable es: {$variable} <br>"; //echo=> escribir texto en la pagina web
+
+	$variable="20.5";
+	echo "El valor de la variable es: {$variable} <br>"; //echo=> escribir texto en la pagina web
+	
+	print ($variable); //mostrar el contenido
+	echo"<br>"; 
+
+	print_r ($variable); //mostrar el contenido
+	echo"<br>";
+
+	var_dump($variable); //muestra el contenido y el tipo de dato
+	echo"<br>";
+
+	$variable=0;
+	if($variable>9)
+	{
+		echo "mayor a 9";
+	}
+
+	else{
+		echo "menor a 9";
+		$variable=1;
+	}
+	echo"<br>";
+
+	switch($variable)
+	{
+		case 0: "valor cero";
+
+		case 1: "valor uno";
+
+		default: "otro valor";
+	}
+
+	for($i=1; $i<10; $i++)
+	{
+		echo"{$variable}*{$i}<br>";
+	}
+
+	while($variable<100)
+	{
+		$variable+=2;
+		echo"$variable<br>";
+	}
+
+	do{
+
+		echo"{$variable}<br>";
+		$variable--;
+
+	}while($variable>0);
+
+	$vector=array(10,20,-1,4,0,8);
+
+	for($i=0; $i<6; $i++)
+	{
+		echo"{$vector[$i]}<br>";
+	}
+
+	foreach($vector as $valor)
+	{
+		echo"{$valor}<br>";
+	}
+
+?>
+

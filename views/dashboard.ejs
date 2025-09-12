@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel Principal</title>
+  <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body class="bg-cover bg-center min-h-screen" style="background-image: url('/src/fondo_chaca.jpg')">
+  <header class="py-4 bg-black bg-opacity-70">
+    <div class="container mx-auto flex justify-between items-center">
+      <img src="/src/chacabuco_logo.png" alt="Logo" class="h-16"/>
+      <a href="/logout" class="btn btn-danger bg-red-600 text-white px-4 py-2 rounded">Cerrar sesión</a>
+    </div>
+  </header>
+
+  <div class="container mx-auto mt-8 text-white max-w-xl">
+    <h2 class="text-2xl font-bold mb-4" id="bienvenida">Bienvenido/a, <%= user.nombre %></h2>
+    <% if (success) { %>
+      <div class="bg-green-500 text-white rounded p-2 mb-2 text-center"><%= success %></div>
+    <% } %>
+
+    <!-- Perfil -->
+    <form method="POST" class="bg-white bg-opacity-10 rounded-lg p-6 mb-4">
+      <h3 class="font-bold mb-2">Tu perfil</h3>
+      <div class="mb-4">
+        <label class="block mb-1">Tipo:</label>
+        <select name="tipo" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white">
+          <option <%= user.tipo === 'Profesor' ? 'selected' : '' %>>Profesor</option>
+          <option <%= user.tipo === 'Preceptor' ? 'selected' : '' %>>Preceptor</option>
+          <option <%= user.tipo === 'Departamento' ? 'selected' : '' %>>Departamento</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1">Nombre y Apellido:</label>
+        <input type="text" name="nombre" value="<%= user.nombre %>" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white">
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1">DNI:</label>
+        <input type="text" name="dni" maxlength="8" value="<%= user.dni %>" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white">
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1">Fecha de Nacimiento:</label>
+        <input type="date" name="fecha" value="<%= user.fecha %>" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white">
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1">Teléfono:</label>
+        <input type="text" name="telefono" maxlength="10" value="<%= user.telefono %>" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white">
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1">Contraseña (dejar vacío para no cambiar):</label>
+        <input type="password" name="password" maxlength="64" value="" class="w-full px-3 py-2 rounded bg-black bg-opacity-60 text-white">
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1">Correo (no editable):</label>
+        <input type="email" value="<%= user.email %>" class="w-full px-3 py-2 rounded bg-gray-800 text-white" disabled>
+      </div>
+      <button type="submit" class="w-full py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600">Guardar Cambios</button>
+    </form>
+
+    <!-- Drive -->
+    <div class="bg-white bg-opacity-10 rounded-lg p-6 mb-4">
+      <h3 class="font-bold mb-2">Drive en LAN</h3>
+      <form method="POST" action="/upload" enctype="multipart/form-data" class="mb-4">
+        <div class="flex items-center justify-between">
+          <input type="file" name="archivo" class="text-white" required>
+          <button type="submit" class="px-4 py-2 bg-white text-black font-bold rounded hover:bg-gray-200">Subir</button>
+        </div>
+      </form>
+      <div>
+        <h4 class="font-bold mb-2">Archivos accesibles</h4>
+        <% if (!files || files.length === 0) { %>
+          <p>No hay archivos todavía.</p>
+        <% } else { %>
+          <ul>
+            <% files.forEach(f => { %>
+              <li class="flex justify-between items-center mb-2 bg-black bg-opacity-50 rounded px-3 py-2">
+                <div class="text-left">
+                  <div><%= f.original_name %></div>
+                  <small>Dueño: <%= f.owner_nombre %> • <%= (f.size/1024).toFixed(1) %> KB • <%= new Date(f.created_at).toLocaleString() %></small>
+                </div>
+                <div class="flex items-center">
+                  <a class="px-3 py-2 bg-white text-black rounded mr-2" href="/files/<%= f.id %>/download">Descargar</a>
+                  <!-- Formulario para enviar por Gmail -->
+                  <form method="POST" action="/files/<%= f.id %>/email" style="display:inline">
+                    <input type="email" name="targetEmail" placeholder="correo@ejemplo.com" required
+                           class="px-2 py-1 rounded text-black">
+                    <button type="submit" class="px-3 py-2 bg-blue-500 text-white rounded">
+                      Enviar por Gmail
+                    </button>
+                  </form>
+                  <% if (f.owner_id === user.id) { %>
+                    <form method="POST" action="/files/<%= f.id %>/delete" style="display:inline">
+                      <button class="px-3 py-2 bg-red-600 text-white rounded mr-2" onclick="return confirm('¿Eliminar archivo?');">Eliminar</button>
+                    </form>
+                  <% } %>
+                </div>
+              </li>
+            <% }) %>
+          </ul>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentFileId = null;
+
+    function openShare(fileId, fileName){
+      currentFileId = fileId;
+      const modal = document.getElementById('shareModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('shareFileName').innerText = fileName;
+    }
+
+    function closeShare(){
+      const modal = document.getElementById('shareModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    document.getElementById('shareForm').addEventListener('submit', async e=>{
+      e.preventDefault();
+      if(!currentFileId) return alert('Archivo no seleccionado');
+
+      const formData = new FormData(e.target);
+      const data = {
+        targetEmail: formData.get('targetEmail'),
+        read: formData.get('read') ? 1:0,
+        write: formData.get('write') ? 1:0,
+        del: formData.get('del') ? 1:0,
+        share: formData.get('share') ? 1:0
+      };
+
+      const res = await fetch(`/files/${currentFileId}/share`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+
+      if(res.ok){
+        alert('Archivo compartido correctamente');
+        closeShare();
+      } else {
+        const text = await res.text();
+        alert('Error compartiendo: '+text);
+      }
+    });
+  </script>
+
+</body>
+</html>
