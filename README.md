@@ -1,6 +1,6 @@
 # Drive Escolar
 
-Drive Escolar es una aplicación web para la gestión y compartición de archivos entre usuarios de una institución educativa. Permite a los usuarios registrarse, iniciar sesión, subir archivos, compartirlos por correo electrónico y gestionar permisos de acceso.
+Esta es una aplicación web para la gestión y compartición de archivos entre usuarios de una institución educativa. Permite a los usuarios registrarse, iniciar sesión, subir archivos, compartirlos por correo electrónico y gestionar permisos de acceso.
 
 ## Características
 
