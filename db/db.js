@@ -56,34 +56,4 @@ db.serialize(() => {
   )`);
 });
 
-// Busca un archivo por ID
-function getFileById(id) {
-  return new Promise((resolve, reject) => {
-    db.get('SELECT * FROM files WHERE id = ?', [id], (err, row) => {
-      if (err) return reject(err);
-      resolve(row);
-    });
-  });
-}
-
-// Obtener historial de mails enviados por usuario
-function getMailHistoryByUser(userId) {
-  return new Promise((resolve, reject) => {
-    db.all(
-      `SELECT mh.*, f.original_name 
-       FROM mail_history mh 
-       JOIN files f ON f.id = mh.file_id
-       WHERE mh.sender_id = ?
-       ORDER BY mh.sent_at DESC`,
-      [userId],
-      (err, rows) => {
-        if (err) return reject(err);
-        resolve(rows);
-      }
-    );
-  });
-}
-
 module.exports = db;
-module.exports.getFileById = getFileById;
-module.exports.getMailHistoryByUser = getMailHistoryByUser;
