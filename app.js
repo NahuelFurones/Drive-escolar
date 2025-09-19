@@ -8,9 +8,10 @@ const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
+const PDFDocument = require('pdfkit');
 
 const db = require('./db');
-const { getFileById } = require('./db');
+const { getFileById, getMailHistoryByUser } = require('./db');
 
 // Transport con Gmail
 const transporter = nodemailer.createTransport({
@@ -72,8 +73,15 @@ app.post('/files/:id/email', async (req, res) => {
         console.error(err);
         return res.status(500).send('Error enviando correo');
       }
-      console.log('Correo enviado: ' + info.response);
-      res.redirect('/dashboard');
+      // Registrar en historial de mails enviados
+      db.run(
+        `INSERT INTO mail_history(sender_id, file_id, target_email, sent_at) VALUES (?, ?, ?, ?)`,
+        [user.id, fileId, targetEmail, nowISO()],
+        ()=> {
+          console.log('Correo enviado: ' + info.response);
+          res.redirect('/dashboard');
+        }
+      );
     });
   } catch (err) {
     res.status(500).send('Error en la base de datos');
@@ -129,15 +137,20 @@ app.post('/crearCuenta', (req, res) => {
 });
 
 // --------- DASHBOARD ---------
-app.get('/dashboard', ensureAuth, (req, res) => {
+app.get('/dashboard', ensureAuth, async (req, res) => {
   const userId = req.session.user.id;
   const q = `
     SELECT f.id,f.original_name,f.size,f.created_at,u.nombre as owner_nombre,f.owner_id
     FROM files f JOIN users u ON u.id=f.owner_id
     WHERE f.owner_id=? OR f.id IN (SELECT file_id FROM permissions WHERE user_id=? AND can_read=1)
     ORDER BY f.created_at DESC`;
-  db.all(q, [userId, userId], (err, files) => {
-    res.render('dashboard', { user: req.session.user, success: null, files });
+  db.all(q, [userId, userId], async (err, files) => {
+    // Obtener historial de mails enviados
+    let mailHistory = [];
+    try {
+      mailHistory = await getMailHistoryByUser(userId);
+    } catch {}
+    res.render('dashboard', { user: req.session.user, success: null, files, mailHistory });
   });
 });
 
@@ -197,6 +210,35 @@ app.post('/files/:id/share', ensureAuth, (req, res) => {
         ()=> res.sendStatus(200));
     });
   });
+});
+
+// --------- RUTA PARA GENERAR PDF PERSONALIZADO ---------
+app.post('/crear-pdf-personalizado', ensureAuth, async (req, res) => {
+  const contenido = req.body.pdfContent || '';
+  let fileName = (req.body.pdfFileName || 'personalizado.pdf').trim();
+  if (!fileName.toLowerCase().endsWith('.pdf')) fileName += '.pdf';
+  fileName = fileName.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+
+  const doc = new PDFDocument();
+  let buffers = [];
+  doc.on('data', buffers.push.bind(buffers));
+  doc.on('end', () => {
+    const pdfData = Buffer.concat(buffers);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.end(pdfData);
+  });
+
+  doc.fontSize(20).text('PDF personalizado - Drive Escolar', { align: 'center' });
+  doc.moveDown();
+  doc.fontSize(14).text(`Usuario: ${req.session.user.nombre}`);
+  doc.text(`Fecha: ${new Date().toLocaleString()}`);
+  doc.moveDown();
+  doc.fontSize(14).text('Contenido personalizado:', { underline: true });
+  doc.moveDown();
+  doc.fontSize(12).text(contenido || '(Sin contenido)', { align: 'left' });
+
+  doc.end();
 });
 
 // --------- PROTECCIÓN DE RUTAS ---------

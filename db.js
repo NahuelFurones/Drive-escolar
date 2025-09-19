@@ -43,6 +43,17 @@ db.serialize(() => {
     FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   )`);
+
+  // Tabla de historial de mails enviados
+  db.run(`CREATE TABLE IF NOT EXISTS mail_history(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sender_id INTEGER NOT NULL,
+    file_id INTEGER NOT NULL,
+    target_email TEXT NOT NULL,
+    sent_at TEXT NOT NULL,
+    FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE
+  )`);
 });
 
 // Busca un archivo por ID
@@ -55,5 +66,24 @@ function getFileById(id) {
   });
 }
 
+// Obtener historial de mails enviados por usuario
+function getMailHistoryByUser(userId) {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `SELECT mh.*, f.original_name 
+       FROM mail_history mh 
+       JOIN files f ON f.id = mh.file_id
+       WHERE mh.sender_id = ?
+       ORDER BY mh.sent_at DESC`,
+      [userId],
+      (err, rows) => {
+        if (err) return reject(err);
+        resolve(rows);
+      }
+    );
+  });
+}
+
 module.exports = db;
 module.exports.getFileById = getFileById;
+module.exports.getMailHistoryByUser = getMailHistoryByUser;
