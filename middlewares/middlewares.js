@@ -8,5 +8,5 @@ module.exports = function(app) {
   app.use(express.json());
   app.use(session({ secret: 'tu_secreto', resave: false, saveUninitialized: false }));
   app.use(helmet());
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.resolve(__dirname, '..', 'public')));
 };
