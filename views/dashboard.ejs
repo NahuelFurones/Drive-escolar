@@ -6,6 +6,7 @@
   <title>Panel Principal</title>
   <link href="/css/styles.css" rel="stylesheet">
 </head>
+
 <body class="bg-cover bg-center min-h-screen" style="background-image: url('/src/fondo_chaca.jpg')">
   <header class="py-4 bg-black bg-opacity-70">
     <div class="container mx-auto flex justify-between items-center">
@@ -20,7 +21,6 @@
       <div class="bg-green-500 text-white rounded p-2 mb-2 text-center"><%= success %></div>
     <% } %>
 
-    <!-- Perfil -->
     <form method="POST" class="bg-white bg-opacity-10 rounded-lg p-6 mb-4">
       <h3 class="font-bold mb-2">Tu perfil</h3>
       <div class="mb-4">
@@ -58,7 +58,7 @@
       <button type="submit" class="w-full py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600">Guardar Cambios</button>
     </form>
 
-    <!-- Drive -->
+
     <div class="bg-white bg-opacity-10 rounded-lg p-6 mb-4">
       <h3 class="font-bold mb-2">Drive en LAN</h3>
       <form method="POST" action="/upload" enctype="multipart/form-data" class="mb-4">
@@ -81,7 +81,7 @@
                 </div>
                 <div class="flex items-center">
                   <a class="px-3 py-2 bg-white text-black rounded mr-2" href="/files/<%= f.id %>/download">Descargar</a>
-                  <!-- Formulario para enviar por Gmail -->
+
                   <form method="POST" action="/files/<%= f.id %>/email" style="display:inline">
                     <input type="email" name="targetEmail" placeholder="correo@ejemplo.com" required
                            class="px-2 py-1 rounded text-black">
@@ -102,18 +102,47 @@
       </div>
     </div>
 
-    <!-- Historial de mails enviados -->
+
     <div class="bg-white bg-opacity-10 rounded-lg p-6 mb-4">
       <h3 class="font-bold mb-2">Historial de mails enviados</h3>
       <% if (!mailHistory || mailHistory.length === 0) { %>
         <p>No has enviado archivos por mail aún.</p>
       <% } else { %>
-        <ul>
-          <% mailHistory.forEach(mh => { %>
+        <ul class="max-h-64 overflow-y-auto">
+          <% mailHistory.forEach((mh, idx) => { 
+               let ext = '';
+               if (mh.original_name && mh.original_name.includes('.')) {
+                 ext = mh.original_name.split('.').pop().toLowerCase();
+               } else {
+                 ext = 'archivo';
+               }
+          %>
             <li class="mb-2">
-              <span class="font-semibold"><%= mh.original_name %></span>
-              enviado a <span class="italic"><%= mh.target_email %></span>
-              el <span><%= new Date(mh.sent_at).toLocaleString() %></span>
+              <details class="mail-details">
+                <summary class="cursor-pointer bg-gray-800 bg-opacity-60 px-4 py-3 rounded hover:bg-opacity-80 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold truncate max-w-xs" style="display:inline-block; vertical-align:middle;">
+                      <%= ext %>
+                    </span>
+                    <span>&nbsp;</span>
+                    <span class="ml-2">enviado a</span>
+                    <span>&nbsp;</span>
+                    <span class="italic"><%= mh.target_email %></span>
+                    <span>&nbsp;</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span>el</span>
+                    <span>&nbsp;</span>
+                    <span><%= new Date(mh.sent_at).toLocaleString() %></span>
+                  </div>
+                </summary>
+                <div class="mt-2 text-sm text-gray-200 px-2 mail-details-content">
+                  <strong>Nombre:</strong> <%= mh.original_name %><br>
+                  <strong>Enviado a:</strong> <%= mh.target_email %><br>
+                  <strong>Fecha:</strong> <%= new Date(mh.sent_at).toLocaleString() %><br>
+                  <strong>Enviado por:</strong> <%= user.nombre %>
+                </div>
+              </details>
             </li>
           <% }) %>
         </ul>
@@ -122,12 +151,10 @@
 
     <div class="mb-4">
       <form method="POST" action="/crear-pdf-personalizado" class="mb-2 flex flex-col gap-2">
-        <label for="pdfFileName" class="font-bold">Nombre del archivo PDF:</label>
-        <input id="pdfFileName" name="pdfFileName" type="text" class="rounded px-2 py-1 text-black" placeholder="Ej: mi_archivo.pdf" required>
-        <label for="pdfContent" class="font-bold">Contenido personalizado para PDF:</label>
-        <textarea id="pdfContent" name="pdfContent" rows="3" class="rounded px-2 py-1 text-black" placeholder="Escribe aquí el contenido que quieres en tu PDF"></textarea>
-        <button type="submit" class="py-2 px-4 bg-indigo-600 text-white rounded font-bold hover:bg-indigo-700">
-          Descargar PDF personalizado
+        <button type="submit"
+          class="px-4 py-2 bg-white text-black rounded shadow border border-gray-300 hover:bg-gray-100 transition"
+          style="box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-weight: normal;">
+          Descargar PDF de mails
         </button>
       </form>
     </div>
@@ -177,7 +204,29 @@
         alert('Error compartiendo: '+text);
       }
     });
-  </script>
 
+    // Animación para <details>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.mail-details').forEach(details => {
+        const content = details.querySelector('.mail-details-content');
+        if (content) {
+          content.style.overflow = 'hidden';
+          content.style.maxHeight = '0';
+          content.style.transition = 'max-height 0.3s cubic-bezier(0.4,0,0.2,1)';
+        }
+        details.addEventListener('toggle', function() {
+          if (details.open) {
+            if (content) {
+              content.style.maxHeight = content.scrollHeight + 'px';
+            }
+          } else {
+            if (content) {
+              content.style.maxHeight = '0';
+            }
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

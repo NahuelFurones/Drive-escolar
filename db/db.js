@@ -3,7 +3,7 @@ const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database('./data.sqlite');
 
 db.serialize(() => {
-  // Activar claves foráneas
+
   db.run(`PRAGMA foreign_keys = ON`);
 
   // Tabla de usuarios
